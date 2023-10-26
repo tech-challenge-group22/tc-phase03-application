@@ -429,7 +429,7 @@
         "parameters": [
           {
             "in": "query",
-            "name": "id",
+            "name": "order_id",
             "type": "number"
           }
         ],
