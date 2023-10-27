@@ -1,14 +1,12 @@
 import { DynamoDB, config } from 'aws-sdk';
-import OrderQueue, {
-  OrderQueueStatus,
-  OrderWaitingTime,
-} from '../core/entities/OrderQueue';
+import OrderQueue, { statusName } from '../core/entities/OrderQueue';
 import IOrderQueueGateway from '../core/ports/IOrderQueueGateway';
 
 export default class DynamoDBOrderQueueRepository
   implements IOrderQueueGateway
 {
   private dynamodb: DynamoDB.DocumentClient;
+  private tableName = 'order_queue';
 
   constructor() {
     config.update({
@@ -33,7 +31,7 @@ export default class DynamoDBOrderQueueRepository
 
   async getOrderQueue(orderId?: number): Promise<OrderQueue[]> {
     const params: DynamoDB.DocumentClient.ScanInput = {
-      TableName: 'order_queue',
+      TableName: this.tableName,
     };
 
     if (orderId) {
@@ -41,74 +39,65 @@ export default class DynamoDBOrderQueueRepository
       params.ExpressionAttributeValues = { ':order_id': orderId };
     } else {
       params.FilterExpression = '#orderStatus <> :orderStatus';
-      params.ExpressionAttributeValues = { ':orderStatus': 'Finalizado' };
+      params.ExpressionAttributeValues = { ':orderStatus': statusName[4] };
       params.ExpressionAttributeNames = {
         '#orderStatus': 'status',
       };
     }
 
     const returnedValues = await this.dynamodb.scan(params).promise();
-    const resultEntity: OrderQueue[] = [];
-    returnedValues.Items?.forEach((element) => {
-      resultEntity.push(
-        new OrderQueue(
-          element.order_id,
-          element.status_queue,
-          element.orderDate,
-          element.waiting_time,
-          element.id,
-        ),
-      );
-    });
+    const resultEntity: OrderQueue[] = this.parseToEntity(returnedValues);
     return resultEntity;
   }
 
-  async getOrderQueueStatus(orderId: number) {
-    const params = {
-      TableName: 'order_queue',
-      Key: {
-        orderId: orderId,
-      },
-      // ProjectionExpression: 'status_queue_enum_id, waiting_time',
+  async getOrderQueueStatus(orderId: number): Promise<OrderQueue[]> {
+    const params: DynamoDB.DocumentClient.ScanInput = {
+      TableName: this.tableName,
+      FilterExpression: 'order_id = :order_id',
+      ExpressionAttributeValues: { ':order_id': orderId },
     };
 
-    const result = await this.dynamodb.get(params).promise();
-    return result.Item;
+    const returnedValues = await this.dynamodb.scan(params).promise();
+    const result = this.parseToEntity(returnedValues);
+    return result;
   }
 
   async updateOrderQueue(
-    orderId: number,
+    id: string,
     status_queue_enum_id: number,
     waiting_time: number,
   ) {
     const format_time = this.formatWaitingTime(waiting_time);
+    const status: string = statusName[status_queue_enum_id];
 
-    const params = {
-      TableName: 'order_queue',
+    const updateParams = {
+      TableName: this.tableName,
       Key: {
-        order_id: orderId,
+        id: id,
       },
-      UpdateExpression:
-        'SET status_queue_enum_id = :status, waiting_time = :time',
+      UpdateExpression: 'SET status_queue = :status, waiting_time = :time',
       ExpressionAttributeValues: {
-        ':status': status_queue_enum_id,
+        ':status': status,
         ':time': format_time,
       },
     };
 
-    const result = await this.dynamodb.update(params).promise();
+    const returnedValues = await this.dynamodb.update(updateParams).promise();
+    const result = this.parseToEntity(returnedValues);
     return result;
   }
 
   async add(orderId: number) {
-    const format_time = this.formatWaitingTime(OrderWaitingTime.TempoRecebido);
+    const queue = new OrderQueue(orderId);
 
     const params = {
-      TableName: 'order_queue',
+      TableName: this.tableName,
       Item: {
-        order_id: orderId,
-        status_queue_enum_id: OrderQueueStatus.Recebido,
-        waiting_time: format_time,
+        id: queue.id,
+        status_queue: queue.status_queue,
+        waiting_time: queue.waiting_time,
+        orderDate: queue.orderDate,
+        order_id: queue.order_id,
       },
     };
 
@@ -119,5 +108,29 @@ export default class DynamoDBOrderQueueRepository
   private formatWaitingTime(waiting_time: number): string {
     const format_time = '00:0' + waiting_time.toString() + ':00';
     return format_time;
+  }
+
+  private parseToEntity(returnedValues: any): OrderQueue[] {
+    const resultEntity: OrderQueue[] = [];
+    returnedValues.Items?.forEach(
+      (element: {
+        order_id: number;
+        status_queue: string;
+        orderDate: string;
+        waiting_time: string | undefined;
+        id: string | undefined;
+      }) => {
+        resultEntity.push(
+          new OrderQueue(
+            element.order_id,
+            element.status_queue,
+            element.orderDate,
+            element.waiting_time,
+            element.id,
+          ),
+        );
+      },
+    );
+    return resultEntity;
   }
 }

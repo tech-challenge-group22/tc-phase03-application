@@ -1,5 +1,4 @@
 import { GetOrderQueueUseCase } from '../usecases/getOrderQueue/GetOrderQueue';
-import MySqlOrderQueueRepository from '../gateways/OrderQueueRepository';
 import { GetOrderQueueInputDTO } from '../usecases/getOrderQueue/GetOrderQueueDTO';
 import { MoveNextInputDTO } from '../usecases/moveNext/MoveNextDTO';
 import { MoveNextUseCase } from '../usecases/moveNext/MoveNext';
@@ -15,7 +14,7 @@ export class OrderQueueController {
   }
 
   static async moveNext(orderId: number): Promise<any> {
-    const orderQueueGateway = new MySqlOrderQueueRepository();
+    const orderQueueGateway = new DynamoDBOrderQueueRepository();
     const input: MoveNextInputDTO = {
       id: orderId,
     };
