@@ -1,20 +1,24 @@
-import { DynamoDB, config } from 'aws-sdk';
+import { DynamoDBDocument, ScanCommandInput } from '@aws-sdk/lib-dynamodb';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import OrderQueue, { statusName } from '../core/entities/OrderQueue';
 import IOrderQueueGateway from '../core/ports/IOrderQueueGateway';
 
 export default class DynamoDBOrderQueueRepository
   implements IOrderQueueGateway
 {
-  private dynamodb: DynamoDB.DocumentClient;
+  private dynamodb: DynamoDBDocument;
   private tableName = 'order_queue';
 
   constructor() {
-    config.update({
-      accessKeyId: process.env.DYNAMODB_ACCESS_KEY,
-      secretAccessKey: process.env.DYNAMODB_SECRET,
-      region: process.env.AWS_REGION,
-    });
-    this.dynamodb = new DynamoDB.DocumentClient();
+    this.dynamodb = DynamoDBDocument.from(
+      new DynamoDB({
+        credentials: {
+          accessKeyId: `${process.env.DYNAMODB_ACCESS_KEY}`,
+          secretAccessKey: `${process.env.DYNAMODB_SECRET}`,
+          sessionToken: `${process.env.AWS_REGION}`,
+        },
+      }),
+    );
   }
 
   beginTransaction(): void {
@@ -30,7 +34,7 @@ export default class DynamoDBOrderQueueRepository
   }
 
   async getOrderQueue(orderId?: number): Promise<OrderQueue[]> {
-    const params: DynamoDB.DocumentClient.ScanInput = {
+    const params: ScanCommandInput = {
       TableName: this.tableName,
     };
 
@@ -45,19 +49,19 @@ export default class DynamoDBOrderQueueRepository
       };
     }
 
-    const returnedValues = await this.dynamodb.scan(params).promise();
+    const returnedValues = await this.dynamodb.scan(params);
     const resultEntity: OrderQueue[] = this.parseToEntity(returnedValues);
     return resultEntity;
   }
 
   async getOrderQueueStatus(orderId: number): Promise<OrderQueue[]> {
-    const params: DynamoDB.DocumentClient.ScanInput = {
+    const params: ScanCommandInput = {
       TableName: this.tableName,
       FilterExpression: 'order_id = :order_id',
       ExpressionAttributeValues: { ':order_id': orderId },
     };
 
-    const returnedValues = await this.dynamodb.scan(params).promise();
+    const returnedValues = await this.dynamodb.scan(params);
     const result = this.parseToEntity(returnedValues);
     return result;
   }
@@ -82,7 +86,7 @@ export default class DynamoDBOrderQueueRepository
       },
     };
 
-    const returnedValues = await this.dynamodb.update(updateParams).promise();
+    const returnedValues = await this.dynamodb.update(updateParams);
     const result = this.parseToEntity(returnedValues);
     return result;
   }
@@ -101,7 +105,7 @@ export default class DynamoDBOrderQueueRepository
       },
     };
 
-    const result = await this.dynamodb.put(params).promise();
+    const result = await this.dynamodb.put(params);
     return result;
   }
 
