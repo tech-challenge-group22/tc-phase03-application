@@ -15,7 +15,6 @@ export default class DynamoDBOrderQueueRepository
         credentials: {
           accessKeyId: `${process.env.DYNAMODB_ACCESS_KEY}`,
           secretAccessKey: `${process.env.DYNAMODB_SECRET}`,
-          sessionToken: `${process.env.AWS_REGION}`,
         },
       }),
     );
