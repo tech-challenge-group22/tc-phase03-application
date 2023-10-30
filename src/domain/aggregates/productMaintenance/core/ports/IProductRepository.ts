@@ -1,5 +1,6 @@
 export default interface IProductRepository {
   createProduct(
+    itemId: number,
     itemType: number,
     itemName: string,
     itemPrice: number,

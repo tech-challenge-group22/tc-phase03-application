@@ -24,6 +24,8 @@ import {
   ListProdCategoryOutputDTO,
   QueryParamsCategoryDTO,
 } from '../useCases/list-product-category/ListProductByCategoryDTO';
+import AwsDynamoRepository from '../gateways/AwsDynamoRepository';
+import RefreshListCache from '../useCases/refresh-list-cache/RefreshListCache';
 
 export default class ProductController {
   static async createProduct(body: string): Promise<any> {
@@ -56,6 +58,7 @@ export default class ProductController {
 
   static async getProducts(IdItem: number): Promise<any> {
     const listUseCase: ListProduct = new ListProduct(
+      new AwsDynamoRepository(),
       new MySqlProductRepository(),
     );
     let input: QueryParamsDTO = {
@@ -73,6 +76,15 @@ export default class ProductController {
       itemType: categoryId,
     };
     const output: ListProdCategoryOutputDTO = await listUseCase.execute(input);
+    return output;
+  }
+
+  static async refreshCache(): Promise<any> {
+    const refreshUseCase: RefreshListCache = new RefreshListCache(
+      new AwsDynamoRepository(),
+      new MySqlProductRepository(),
+    );
+    const output: ListProdCategoryOutputDTO = await refreshUseCase.execute();
     return output;
   }
 }

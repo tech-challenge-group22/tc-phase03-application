@@ -75,6 +75,7 @@ export default class MySqlProductRepository implements IProductRepository {
     }
   }
   async createProduct(
+    itemId: number,
     itemType: number,
     itemName: string,
     itemPrice: number,
