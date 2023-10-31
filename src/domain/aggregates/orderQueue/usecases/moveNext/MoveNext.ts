@@ -1,6 +1,6 @@
-import {
-  OrderQueueStatus,
+import OrderQueue, {
   OrderWaitingTime,
+  statusCode,
 } from '../../core/entities/OrderQueue';
 import IOrderQueueGateway from '../../core/ports/IOrderQueueGateway';
 import {
@@ -17,7 +17,9 @@ export class MoveNextUseCase {
     try {
       gateway.beginTransaction();
 
-      const myOrder = await gateway.getOrderQueueStatus(params.id);
+      const myOrder: OrderQueue[] = await gateway.getOrderQueueStatus(
+        params.id,
+      );
       if (myOrder.length == 0) {
         gateway.rollback();
 
@@ -34,14 +36,13 @@ export class MoveNextUseCase {
         return output;
       }
 
-      var status_queue_enum_id = myOrder[0].status_queue_enum_id;
-      var waiting_time = myOrder[0].waiting_time;
+      var status_queue_enum_id = statusCode[myOrder[0].status_queue];
+      var waiting_time = OrderWaitingTime.TempoRecebido;
 
-      //set the status the the next level (see OrderQueueStatus enum): 1: Recebido, 2: Em preparação; 3: Pronto; 4: Finalizado
-      if (status_queue_enum_id != OrderQueueStatus.Finalizado) {
+      if (status_queue_enum_id != statusCode['Finalizado']) {
         status_queue_enum_id++;
 
-        if (status_queue_enum_id == OrderQueueStatus.EmPreparacao) {
+        if (status_queue_enum_id == statusCode['Em preparação']) {
           waiting_time = OrderWaitingTime.TempoEmPreparacao;
         } else {
           waiting_time = OrderWaitingTime.TempoPronto;
@@ -56,9 +57,8 @@ export class MoveNextUseCase {
         console.log('WARNING: Order has already delivered!');
         return output;
       }
-
       await gateway.updateOrderQueue(
-        params.id,
+        myOrder[0].id,
         status_queue_enum_id,
         waiting_time,
       );

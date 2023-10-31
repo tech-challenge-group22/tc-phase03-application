@@ -1,8 +1,8 @@
 import mysql, { OkPacket } from 'mysql';
 import * as dotenv from 'dotenv';
 import { OrderGatewayInterface } from '../interfaces/gateways/OrderGatewayInterface';
-import MySqlOrderQueueRepository from '../../orderQueue/gateways/OrderQueueRepository';
 import { IOrderItem } from '../interfaces/IOrderItem';
+import DynamoDBOrderQueueRepository from '../../orderQueue/gateways/DynamoDBOrderQueueRepository';
 
 export class MySQLOrderRepository implements OrderGatewayInterface {
   private connection: mysql.Connection;
@@ -78,7 +78,7 @@ export class MySQLOrderRepository implements OrderGatewayInterface {
 
       return result.insertId;
     } catch (err) {
-      const msg = "Error inserting a new Order";
+      const msg = 'Error inserting a new Order';
       console.log(msg, err);
       throw new Error(msg);
     }
@@ -95,7 +95,7 @@ export class MySQLOrderRepository implements OrderGatewayInterface {
       ]);
       await this.commitDB(insertItemsQuery, [formattedItems]);
     } catch (err) {
-      const msg = "Error inserting Order Items";
+      const msg = 'Error inserting Order Items';
       console.log(msg, err);
       throw new Error(msg);
     }
@@ -103,12 +103,12 @@ export class MySQLOrderRepository implements OrderGatewayInterface {
 
   async addOrderQueue(orderId: number): Promise<number | null> {
     try {
-      let orderQueueRepository = new MySqlOrderQueueRepository(this.connection);
+      let orderQueueRepository = new DynamoDBOrderQueueRepository();
       await orderQueueRepository.add(orderId);
       const result = await orderQueueRepository.getOrderQueue(orderId);
       return Number(result);
     } catch (err) {
-      const msg = "Error adding a new order into the order queue"
+      const msg = 'Error adding a new order into the order queue';
       console.log(msg, err);
       throw new Error(msg);
     }
@@ -116,13 +116,13 @@ export class MySQLOrderRepository implements OrderGatewayInterface {
 
   async getItemPrices(items: number[]): Promise<any> {
     try {
-      const query = 'SELECT id, item_price from itens WHERE id IN (?) ORDER BY ID';
+      const query =
+        'SELECT id, item_price from itens WHERE id IN (?) ORDER BY ID';
       return await this.commitDB(query, [items]);
     } catch (err) {
-      const msg = "Error getting Order Items prices";
+      const msg = 'Error getting Order Items prices';
       console.log(msg, err);
       throw new Error(msg);
     }
   }
-
 }
