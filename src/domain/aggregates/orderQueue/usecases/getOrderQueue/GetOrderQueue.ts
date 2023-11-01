@@ -58,9 +58,11 @@ export class GetOrderQueueUseCase {
 
     result.forEach((element: any) => {
       let orderQueue: orderqueueInfo = {
-        id: element.order_id,
+        id: element.id,
+        order_id: element.order_id,
         status: element.status_queue,
         waiting_time: element.waiting_time,
+        orderDate: element.orderDate,
       };
       output.result?.push(orderQueue);
     });
