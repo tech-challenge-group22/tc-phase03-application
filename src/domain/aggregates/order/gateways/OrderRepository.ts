@@ -10,10 +10,10 @@ export class MySQLOrderRepository implements OrderGatewayInterface {
   constructor() {
     dotenv.config();
     this.connection = mysql.createConnection({
-      host: 'aws-rds-postech.c0c2tpajfekp.us-east-1.rds.amazonaws.com',
-      user: 'admin',
-      password: '9eXkA5g02X',
-      database: 'DeliverySystem',
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
     });
     this.connection.connect();
   }
