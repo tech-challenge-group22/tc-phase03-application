@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const secretKey = process.env.SECRET_KEY_JWT_TOKEN;
+const secretKey = 'rgBwl4pxy1TIW0G7g6wxMSp3Q7kD0qGg9rSQrK0S8i4=';
 
 export function verifyToken(req: Request, res: Response, next: NextFunction) {
   const token = req.header('Authorization')?.replace('Bearer ', '');
