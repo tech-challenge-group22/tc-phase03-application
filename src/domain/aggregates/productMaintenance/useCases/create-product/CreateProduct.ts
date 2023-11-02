@@ -23,6 +23,7 @@ export default class CreateProduct implements UseCaseInterface {
       }
 
       const result = await this.repository.createProduct(
+        input.itemId,
         input.itemType,
         input.itemName,
         input.itemPrice,
