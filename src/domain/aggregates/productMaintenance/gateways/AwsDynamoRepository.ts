@@ -18,9 +18,10 @@ export default class AwsDynamoRepository implements IProductCacheRepository {
     this.dynamodb = DynamoDBDocument.from(
       new DynamoDB({
         credentials: {
-          accessKeyId: `${process.env.AWS_ACCESS_KEY_DYNDB}`,
-          secretAccessKey: `${process.env.AWS_SECRET_DYNDB}`,
+          accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
+          secretAccessKey: `${process.env.AWS_SECRET}`,
         },
+        region: `${process.env.AWS_REGION}`,
       }),
     );
   }
