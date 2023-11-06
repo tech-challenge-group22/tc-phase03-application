@@ -13,9 +13,10 @@ export default class DynamoDBOrderQueueRepository
     this.dynamodb = DynamoDBDocument.from(
       new DynamoDB({
         credentials: {
-          accessKeyId: `${process.env.DYNAMODB_ACCESS_KEY}`,
-          secretAccessKey: `${process.env.DYNAMODB_SECRET}`,
+          accessKeyId: `${process.env.AWS_ACCESS_KEY}`,
+          secretAccessKey: `${process.env.AWS_SECRET}`,
         },
+        region: `${process.env.AWS_REGION}`,
       }),
     );
   }

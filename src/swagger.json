@@ -451,7 +451,7 @@
     },
     "/orderqueue": {
       "get": {
-        "tags": ["OrdersQueue"],
+        "tags": ["Queue"],
         "parameters": [
           {
             "in": "query",
@@ -469,7 +469,7 @@
         }
       },
       "patch": {
-        "tags": ["OrdersQueue"],
+        "tags": ["Queue"],
         "parameters": [
           {
             "in": "query",
