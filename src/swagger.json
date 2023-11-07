@@ -5,6 +5,19 @@
     "description": "API Documentation",
     "version": "1.0.0"
   },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "basePath": "/",
   "paths": {
     "/product": {
@@ -186,6 +199,19 @@
           },
           "400": {
             "description": "Erro ao buscar produtos, esta faltando parametros"
+          }
+        }
+      }
+    },
+    "/product/refreshCache": {
+      "get": {
+        "tags": ["Products"],
+        "responses": {
+          "200": {
+            "description": "Cache atualizado com sucesso"
+          },
+          "400": {
+            "description": "Erro ao atualizar cache"
           }
         }
       }
@@ -425,11 +451,11 @@
     },
     "/orderqueue": {
       "get": {
-        "tags": ["OrdersQueue"],
+        "tags": ["Queue"],
         "parameters": [
           {
             "in": "query",
-            "name": "id",
+            "name": "order_id",
             "type": "number"
           }
         ],
@@ -443,7 +469,7 @@
         }
       },
       "patch": {
-        "tags": ["OrdersQueue"],
+        "tags": ["Queue"],
         "parameters": [
           {
             "in": "query",

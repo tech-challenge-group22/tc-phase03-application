@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { OrderQueueController } from '../../domain/aggregates/orderQueue/controllers/OrderQueueController';
-import { ListOrderOutputDTO } from '../../domain/aggregates/order/usecases/listOrder/ListOrderDTO';
 
 import HttpServer from '../../application/ports/HttpServer';
 import { GetOrderQueueOutputDTO } from '../../domain/aggregates/orderQueue/usecases/getOrderQueue/GetOrderQueueDTO';
@@ -26,7 +25,9 @@ export default class OrderQueueRoute {
       async (req: Request, resp: Response) => {
         try {
           const output: GetOrderQueueOutputDTO =
-            await OrderQueueController.getOrderQueue(Number(req.query.id));
+            await OrderQueueController.getOrderQueue(
+              Number(req.query.order_id),
+            );
 
           if (output.hasError) {
             return resp

@@ -1,9 +1,6 @@
 import ExpressAdapter from './application/adapters/ExpressAdapter';
 import * as dotenv from 'dotenv';
 
-import MySqlProductRepository from './domain/aggregates/productMaintenance/gateways/MySqlProductRepository';
-import MySQLCustomerRepository from './domain/aggregates/userAccess/gateways/MySQLCustomerRepository';
-import MySqlOrderQueueRepository from './domain/aggregates/orderQueue/gateways/OrderQueueRepository';
 import CustomerRoute from './infrastructure/api/customer.route';
 import OrderRoute from './infrastructure/api/order.route';
 import OrderQueueRoute from './infrastructure/api/orderqueue.route';
@@ -13,10 +10,6 @@ import { WebhookRoute } from './infrastructure/api/webhook.route';
 
 dotenv.config();
 const server = new ExpressAdapter();
-
-const database = new MySQLCustomerRepository();
-const database_product = new MySqlProductRepository();
-const databaseOrderQueue = new MySqlOrderQueueRepository();
 
 const customerRoute = new CustomerRoute(server);
 const productRoute = new ProductRoute(server);

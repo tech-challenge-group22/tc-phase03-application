@@ -20,6 +20,7 @@ export default class ProductRoute {
     this.createProduct();
     this.deleteProduct();
     this.updateProduct();
+    this.refreshCache();
   }
   createProduct() {
     this.httpServer.register(
@@ -100,6 +101,22 @@ export default class ProductRoute {
         const id = req.query.category ? Number(req.query.category) : 0;
         const output: ListProductOutputDTO =
           await ProductController.getProductsByCategory(id);
+        if (output.hasError) {
+          return resp.status(400).json(output);
+        } else {
+          return resp.status(200).json(output.result);
+        }
+      },
+    );
+  }
+
+  refreshCache() {
+    this.httpServer.register(
+      'get',
+      '/product/refreshCache',
+      async (req: Request, resp: Response) => {
+        const output: ListProductOutputDTO =
+          await ProductController.refreshCache();
         if (output.hasError) {
           return resp.status(400).json(output);
         } else {
